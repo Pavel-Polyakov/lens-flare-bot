@@ -43,10 +43,19 @@ def push():
 def deploy():
     commands = [
         f'docker pull {image}',
-        f'docker stop {container_name}',
-        f'docker rm {container_name}',
-        f'docker run -e TOKEN={token} -e TZ=Europe/Moscow --name={container_name} --restart=always --detach=true -t {image}'
     ]
+
+    containers = sudo("docker ps --format '{{json .Names}}'").replace('"', '').splitlines()
+    if container_name in containers:
+        commands.extend([
+            f'docker stop {container_name}',
+            f'docker rm {container_name}',
+        ])
+
+    commands.append(
+        f'docker run -e TOKEN={token} -e TZ=Europe/Moscow --name={container_name} --restart=always --detach=true -t {image}'
+    )
+
     sudo(' && '.join(commands))
 
 
